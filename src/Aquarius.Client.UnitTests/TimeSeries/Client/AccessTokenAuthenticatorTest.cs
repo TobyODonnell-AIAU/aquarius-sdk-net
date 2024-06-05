@@ -1,4 +1,5 @@
 ﻿using Aquarius.TimeSeries.Client;
+using Aquarius.TimeSeries.Client.EndPoints;
 using Aquarius.TimeSeries.Client.ServiceModels.Publish;
 using FluentAssertions;
 using NSubstitute;
@@ -21,9 +22,12 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
             return Substitute.For<IServiceClient>();
         }
 
-        protected override AccessTokenAuthenticator CreateAuthenticator()
+        private AccessTokenAuthenticator CreateAuthenticator(bool atNonStandardRoot)
         {
-            var authenticator = AccessTokenAuthenticator.Create("dummyhost") as AccessTokenAuthenticator;
+            var authenticator =
+                (atNonStandardRoot
+                    ? AccessTokenAuthenticator.Create("dummyhost", new NonStandardRoot("/dummyroot"))
+                    : AccessTokenAuthenticator.Create("dummyhost")) as AccessTokenAuthenticator;
 
             if (authenticator != null)
             {
@@ -34,9 +38,9 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         }
 
         [Test]
-        public void Login_SetsClientBearerToken()
+        public void Login_SetsClientBearerToken([Values] bool atNonStandardRoot)
         {
-            var authenticator = CreateAuthenticator();
+            var authenticator = CreateAuthenticator(atNonStandardRoot);
 
             if (authenticator != null && authenticator is AccessTokenAuthenticator tokenAuthenticator)
             {
@@ -48,9 +52,9 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         }
 
         [Test]
-        public void Logout_CallsDeleteSession()
+        public void Logout_CallsDeleteSession([Values] bool atNonStandardRoot)
         {
-            var authenticator = CreateAuthenticator();
+            var authenticator = CreateAuthenticator(atNonStandardRoot);
             
             authenticator.Logout();
 

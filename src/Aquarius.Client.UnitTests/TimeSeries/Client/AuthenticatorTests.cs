@@ -1,5 +1,6 @@
 ﻿using System;
 using Aquarius.TimeSeries.Client;
+using Aquarius.TimeSeries.Client.EndPoints;
 using NSubstitute;
 using NUnit.Framework;
 using ServiceStack;
@@ -38,9 +39,12 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
             return mockServiceClient;
         }
         
-        protected override Authenticator CreateAuthenticator()
+        private Authenticator CreateAuthenticator(bool atNonStandardRoot)
         {
-            var authenticator = Authenticator.Create("dummyhost") as Authenticator;
+            var authenticator =
+                (atNonStandardRoot
+                    ? Authenticator.Create("dummyhost", new NonStandardRoot("/dummyroot"))
+                    : Authenticator.Create("dummyhost")) as Authenticator;
 
             if (authenticator != null)
             {
@@ -51,9 +55,9 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         }
 
         [Test]
-        public void Login_SendsExpectedRequests()
+        public void Login_SendsExpectedRequests([Values] bool atNonStandardRoot)
         {
-            var authenticator = CreateAuthenticator();
+            var authenticator = CreateAuthenticator(atNonStandardRoot);
 
             authenticator.Login(_fixture.Create<string>(), _fixture.Create<string>());
 
@@ -67,11 +71,11 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         }
 
         [Test]
-        public void Logout_WithNgConnection_CallsDeleteSession()
+        public void Logout_WithNgConnection_CallsDeleteSession([Values] bool atNonStandardRoot)
         {
             SetupMockToReturnApiVersion("16.1");
 
-            var authenticator = CreateAuthenticator();
+            var authenticator = CreateAuthenticator(atNonStandardRoot);
             
             authenticator.Logout();
 
@@ -79,11 +83,11 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         }
 
         [Test]
-        public void Logout_With3xConnection_DoesNotCallDeleteSession()
+        public void Logout_With3xConnection_DoesNotCallDeleteSession([Values] bool atNonStandardRoot)
         {
             SetupMockToReturnApiVersion("3.10");
 
-            var authenticator = CreateAuthenticator();
+            var authenticator = CreateAuthenticator(atNonStandardRoot);
 
             authenticator.Logout();
 

@@ -10,5 +10,12 @@ namespace Aquarius.TimeSeries.Client.EndPoints
         {
             return UriHelper.ResolveEndpoint(host, EndPoint);
         }
+
+        public static string ResolveEndpoint(string host, NonStandardRoot root)
+        {
+            return root == null
+                ? ResolveEndpoint(host)
+                : UriHelper.ResolveEndpoint(host, root.EndpointAtRoot(EndPoint));
+        }
     }
 }

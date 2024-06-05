@@ -28,8 +28,6 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
 
         protected abstract IServiceClient CreateMockServiceClient();
 
-        protected abstract TAuthenticator CreateAuthenticator();
-
         protected void ConfigureSystemDetectorWithMockServiceClient()
         {
             var detector = AquariusSystemDetector.Instance;
