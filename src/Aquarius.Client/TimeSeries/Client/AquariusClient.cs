@@ -22,7 +22,16 @@ namespace Aquarius.TimeSeries.Client
         {
             var client = new AquariusClient(AuthenticationType.Credential);
 
-            client.Connect(hostname, username, password);
+            client.Connect(hostname, username, password, default(NonStandardRoot));
+
+            return client;
+        }
+
+        public static IAquariusClient CreateConnectedClient(string hostname, string username, string password, NonStandardRoot nonStandardRoot)
+        {
+            var client = new AquariusClient(AuthenticationType.Credential);
+
+            client.Connect(hostname, username, password, nonStandardRoot);
 
             return client;
         }
@@ -43,7 +52,16 @@ namespace Aquarius.TimeSeries.Client
         {
             var client = new AquariusClient(AuthenticationType.AccessToken);
 
-            client.Connect(hostname, accessToken);
+            client.Connect(hostname, accessToken, default(NonStandardRoot));
+
+            return client;
+        }
+
+        public static IAquariusClient CreateConnectedClient(string hostname, string accessToken, NonStandardRoot nonStandardRoot)
+        {
+            var client = new AquariusClient(AuthenticationType.AccessToken);
+
+            client.Connect(hostname, accessToken, nonStandardRoot);
 
             return client;
         }
@@ -231,9 +249,9 @@ namespace Aquarius.TimeSeries.Client
             return new ScopeAction(null);
         }
 
-        private void Connect(string hostname, string username, string password)
+        private void Connect(string hostname, string username, string password, NonStandardRoot nonStandardRoot)
         {
-            InternalConnect(hostname, () => ConnectionPool.Instance.GetConnection(hostname, username, password, Authenticator.Create(hostname)));
+            InternalConnect(hostname, () => ConnectionPool.Instance.GetConnection(hostname, username, password, Authenticator.Create(hostname, nonStandardRoot)));
         }
 
         private void Connect(string hostname, string username, string password, string existingSessionToken)
@@ -244,19 +262,20 @@ namespace Aquarius.TimeSeries.Client
             InternalConnect(hostname, () => ConnectionPool.Instance.GetConnection(hostname, fakeUsername, fakePassword, ExistingSessionAuthenticator.Create(existingSessionToken)));
         }
 
-        private void Connect(string hostname, string accessToken)
+        private void Connect(string hostname, string accessToken, NonStandardRoot nonStandardRoot)
         {
-            InternalConnect(hostname, () => ConnectionPool.Instance.GetConnection(hostname, accessToken, AccessTokenAuthenticator.Create(hostname)));
+            InternalConnect(hostname, () => ConnectionPool.Instance.GetConnection(hostname, accessToken, AccessTokenAuthenticator.Create(hostname, nonStandardRoot)));
         }
 
-        private void InternalConnect(string hostname, Func<IConnection> connectionFactory)
+        private void InternalConnect(string hostname, Func<IConnection> connectionFactory,
+            NonStandardRoot nonStandardRoot = null)
         {
             Connection = connectionFactory();
             ServerVersion = AquariusSystemDetector.Instance.GetAquariusServerVersion(hostname);
 
-            AddServiceClient(ClientType.PublishJson, PublishV2.ResolveEndpoint(hostname));
-            AddServiceClient(ClientType.AcquisitionJson, AcquisitionV2.ResolveEndpoint(hostname));
-            AddServiceClient(ClientType.ProvisioningJson, ProvisioningV1.ResolveEndpoint(hostname));
+            AddServiceClient(ClientType.PublishJson, PublishV2.ResolveEndpoint(hostname, nonStandardRoot));
+            AddServiceClient(ClientType.AcquisitionJson, AcquisitionV2.ResolveEndpoint(hostname, nonStandardRoot));
+            AddServiceClient(ClientType.ProvisioningJson, ProvisioningV1.ResolveEndpoint(hostname, nonStandardRoot));
 
             if (_authenticationType == AuthenticationType.Credential)
                 SetAutomaticReAuthentication();

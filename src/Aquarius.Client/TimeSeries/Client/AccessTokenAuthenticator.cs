@@ -14,9 +14,19 @@ namespace Aquarius.TimeSeries.Client
             return new AccessTokenAuthenticator(hostname);
         }
 
+        public static IAuthenticator Create(string hostname, NonStandardRoot nonStandardRoot)
+        {
+            return new AccessTokenAuthenticator(hostname, nonStandardRoot);
+        }
+
         private AccessTokenAuthenticator(string hostname)
         {
             Client = new SdkServiceClient(PublishV2.ResolveEndpoint(hostname));
+        }
+
+        private AccessTokenAuthenticator(string hostname, NonStandardRoot nonStandardRoot)
+        {
+            Client = new SdkServiceClient(PublishV2.ResolveEndpoint(hostname, nonStandardRoot));
         }
         
         public string Login(string username, string password)

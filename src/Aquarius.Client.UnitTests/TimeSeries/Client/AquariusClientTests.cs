@@ -28,6 +28,8 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         private IServiceClient _mockAcquisition;
         private IServiceClient _mockProvisioning;
         private IAuthenticator _mockAuthenticator;
+        private string _mockHost;
+        private string _mockNonStandardRoot;
 
         [SetUp]
         public void BeforeEachTest()
@@ -35,7 +37,7 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
             _fixture = new Fixture();
         }
 
-        private void SetUpClientWithMockEndpoints(AuthenticationType authType)
+        private void SetUpClientWithMockEndpoints(AuthenticationType authType, bool useNonStandardRoot)
         {
             _client = new AquariusClient(authType)
             {
@@ -49,11 +51,15 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
 
             _client.Connection = CreateMockConnection(authType);
 
-            var mockHost = "http://example.com";
+            _mockHost = $"https://{Guid.NewGuid().ToString()}.com";
+            _mockNonStandardRoot = "/" + Guid.NewGuid();
+            var mockRoot = useNonStandardRoot
+                ? new NonStandardRoot(_mockNonStandardRoot)
+                : default(NonStandardRoot);
 
-            _client.AddServiceClient(AquariusClient.ClientType.PublishJson, _mockPublish, PublishV2.ResolveEndpoint(mockHost));
-            _client.AddServiceClient(AquariusClient.ClientType.AcquisitionJson, _mockAcquisition, AcquisitionV2.ResolveEndpoint(mockHost));
-            _client.AddServiceClient(AquariusClient.ClientType.ProvisioningJson, _mockProvisioning, Provisioning.ResolveEndpoint(mockHost));
+            _client.AddServiceClient(AquariusClient.ClientType.PublishJson, _mockPublish, PublishV2.ResolveEndpoint(_mockHost, mockRoot));
+            _client.AddServiceClient(AquariusClient.ClientType.AcquisitionJson, _mockAcquisition, AcquisitionV2.ResolveEndpoint(_mockHost, mockRoot));
+            _client.AddServiceClient(AquariusClient.ClientType.ProvisioningJson, _mockProvisioning, Provisioning.ResolveEndpoint(_mockHost, mockRoot));
         }
 
         private AquariusServerVersion CreateDeveloperBuild()
@@ -104,38 +110,34 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
             }
         }
 
-        public static IEnumerable<AuthenticationType> AuthenticationTypeCases = new AuthenticationType[]
+        [Test]
+        public void Publish_HasBaseUri([Values] AuthenticationType authType, [Values] bool atNonStandardRoot)
         {
-            AuthenticationType.Credential,
-            AuthenticationType.AccessToken
-        };
-
-        [TestCaseSource(nameof(AuthenticationTypeCases))]
-        public void Publish_HasBaseUri(AuthenticationType authType)
-        {
-            SetUpClientWithMockEndpoints(authType);
-            AssertClientHasBaseUri(_client.Publish);
+            SetUpClientWithMockEndpoints(authType, atNonStandardRoot);
+            AssertClientHasBaseUri(_client.Publish, atNonStandardRoot);
         }
 
-        [TestCaseSource(nameof(AuthenticationTypeCases))]
-        public void Acquisition_HasBaseUri(AuthenticationType authType)
+        [Test]
+        public void Acquisition_HasBaseUri([Values] AuthenticationType authType, [Values] bool atNonStandardRoot)
         {
-            SetUpClientWithMockEndpoints(authType);
-            AssertClientHasBaseUri(_client.Acquisition);
+            SetUpClientWithMockEndpoints(authType, atNonStandardRoot);
+            AssertClientHasBaseUri(_client.Acquisition, atNonStandardRoot);
         }
 
-        [TestCaseSource(nameof(AuthenticationTypeCases))]
-        public void Provisioning_HasBaseUri(AuthenticationType authType)
+        [Test]
+        public void Provisioning_HasBaseUri([Values] AuthenticationType authType, [Values] bool atNonStandardRoot)
         {
-            SetUpClientWithMockEndpoints(authType);
-            AssertClientHasBaseUri(_client.Provisioning);
+            SetUpClientWithMockEndpoints(authType, atNonStandardRoot);
+            AssertClientHasBaseUri(_client.Provisioning, atNonStandardRoot);
         }
 
-        private void AssertClientHasBaseUri(IServiceClient serviceClient)
+        private void AssertClientHasBaseUri(IServiceClient serviceClient, bool atNonStandardRoot)
         {
             var baseUri = _client.GetBaseUri(serviceClient);
 
             baseUri.Should().NotBeNullOrWhiteSpace();
+            baseUri.Should().StartWith(_mockHost);
+            baseUri.Should().Contain(atNonStandardRoot ? _mockNonStandardRoot : Root.EndPoint);
         }
 
         [Test]
@@ -188,9 +190,9 @@ namespace Aquarius.Client.UnitTests.TimeSeries.Client
         }
 
         [Test]
-        public void UpdateAccessToken_ForCredentialsAuthentication_Throws()
+        public void UpdateAccessToken_ForCredentialsAuthentication_Throws([Values] bool atNonStandardRoot)
         {
-            SetUpClientWithMockEndpoints(AuthenticationType.Credential);
+            SetUpClientWithMockEndpoints(AuthenticationType.Credential, atNonStandardRoot);
 
             Assert.That(() => _client.UpdateAccessToken(_fixture.Create<string>()), Throws.Exception.TypeOf<NotImplementedException>());
         }

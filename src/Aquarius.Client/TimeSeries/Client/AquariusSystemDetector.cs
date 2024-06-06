@@ -107,6 +107,11 @@ namespace Aquarius.TimeSeries.Client
 
         public AquariusServerVersion GetAquariusServerVersion(string hostname)
         {
+            return GetAquariusServerVersion(hostname, default(NonStandardRoot));
+        }
+
+        public AquariusServerVersion GetAquariusServerVersion(string hostname, NonStandardRoot nonStandardRoot)
+        {
             AquariusServerVersion aquariusServerVersion;
 
             if (_knownServerVersions.TryGetValue(hostname, out aquariusServerVersion))
@@ -121,7 +126,7 @@ namespace Aquarius.TimeSeries.Client
                 return aquariusServerVersion;
             }
 
-            aquariusServerVersion = DetectServerVersion(hostname);
+            aquariusServerVersion = DetectServerVersion(hostname, nonStandardRoot);
 
             if (aquariusServerVersion != null)
             {
@@ -131,10 +136,12 @@ namespace Aquarius.TimeSeries.Client
             return aquariusServerVersion;
         }
 
-        private AquariusServerVersion DetectServerVersion(string hostname)
+        private AquariusServerVersion DetectServerVersion(string hostname, NonStandardRoot nonStandardRoot)
         {
             var versionBaseUri = Root.EndPoint + "/apps/v1";
-            var versionEndpoint = UriHelper.ResolveEndpoint(hostname, versionBaseUri);
+            var versionBaseUriAtRoot =
+                nonStandardRoot == null ? versionBaseUri : nonStandardRoot.EndpointAtRoot(versionBaseUri);
+            var versionEndpoint = UriHelper.ResolveEndpoint(hostname, versionBaseUriAtRoot);
 
             var attemptCount = 1;
 

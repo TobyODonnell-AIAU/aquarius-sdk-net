@@ -17,6 +17,11 @@ namespace Aquarius.TimeSeries.Client
             return new Authenticator(hostname);
         }
 
+        public static IAuthenticator Create(string hostname, NonStandardRoot nonStandardRoot)
+        {
+            return new Authenticator(hostname, nonStandardRoot);
+        }
+
         internal IServiceClient Client { get; set; }
         private AquariusServerVersion ServerVersion { get; }
 
@@ -25,6 +30,13 @@ namespace Aquarius.TimeSeries.Client
             Client = new SdkServiceClient(PublishV2.ResolveEndpoint(hostname));
 
             ServerVersion = AquariusSystemDetector.Instance.GetAquariusServerVersion(hostname);
+        }
+
+        private Authenticator(string hostname, NonStandardRoot nonStandardRoot)
+        {
+            Client = new SdkServiceClient(PublishV2.ResolveEndpoint(hostname, nonStandardRoot));
+
+            ServerVersion = AquariusSystemDetector.Instance.GetAquariusServerVersion(hostname, nonStandardRoot);
         }
 
         public string Login(string username, string password)
