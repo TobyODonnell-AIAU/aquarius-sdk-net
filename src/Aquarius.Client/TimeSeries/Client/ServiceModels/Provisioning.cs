@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-02-26 18:51:37
+Date: 2024-07-30 03:44:10
 Version: 6.02
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://develop-1.dev.aquariusdev.net/AQUARIUS/Provisioning/v1
@@ -1071,6 +1071,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         ///</summary>
         [ApiMember(DataType="string", Description="ISO 8601 duration format", Format="offset from UTC")]
         public Offset UtcOffset { get; set; }
+
+        ///<summary>
+        ///Optional. Unique ID of the location
+        ///</summary>
+        [ApiMember(DataType="string", Description="Optional. Unique ID of the location", Format="guid")]
+        public Guid? UniqueId { get; set; }
     }
 
     [Route("/locationfolders", "POST")]
@@ -3020,6 +3026,7 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         string Parameter { get; set; }
         string Unit { get; set; }
         InterpolationType InterpolationType { get; set; }
+        Guid? UniqueId { get; set; }
         string SubLocationIdentifier { get; set; }
         Offset UtcOffset { get; set; }
         bool Publish { get; set; }
@@ -3065,6 +3072,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         ///</summary>
         [ApiMember(DataType="string", Description="Interpolation type", IsRequired=true)]
         public InterpolationType InterpolationType { get; set; }
+
+        ///<summary>
+        ///Optional. Unique ID of the time series
+        ///</summary>
+        [ApiMember(DataType="string", Description="Optional. Unique ID of the time series", Format="guid")]
+        public Guid? UniqueId { get; set; }
 
         ///<summary>
         ///Sub location identifier
@@ -3173,6 +3186,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         public InterpolationType InterpolationType { get; set; }
 
         ///<summary>
+        ///Optional. Unique ID of the time series
+        ///</summary>
+        [ApiMember(DataType="string", Description="Optional. Unique ID of the time series", Format="guid")]
+        public Guid? UniqueId { get; set; }
+
+        ///<summary>
         ///Sub location identifier
         ///</summary>
         [ApiMember(Description="Sub location identifier")]
@@ -3278,6 +3297,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         ///</summary>
         [ApiMember(DataType="string", Description="Interpolation type", IsRequired=true)]
         public InterpolationType InterpolationType { get; set; }
+
+        ///<summary>
+        ///Optional. Unique ID of the time series
+        ///</summary>
+        [ApiMember(DataType="string", Description="Optional. Unique ID of the time series", Format="guid")]
+        public Guid? UniqueId { get; set; }
 
         ///<summary>
         ///Sub location identifier
@@ -3405,6 +3430,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         public InterpolationType InterpolationType { get; set; }
 
         ///<summary>
+        ///Optional. Unique ID of the time series
+        ///</summary>
+        [ApiMember(DataType="string", Description="Optional. Unique ID of the time series", Format="guid")]
+        public Guid? UniqueId { get; set; }
+
+        ///<summary>
         ///Sub location identifier
         ///</summary>
         [ApiMember(Description="Sub location identifier")]
@@ -3504,6 +3535,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
         ///</summary>
         [ApiMember(DataType="string", Description="Interpolation type", IsRequired=true)]
         public InterpolationType InterpolationType { get; set; }
+
+        ///<summary>
+        ///Optional. Unique ID of the time series
+        ///</summary>
+        [ApiMember(DataType="string", Description="Optional. Unique ID of the time series", Format="guid")]
+        public Guid? UniqueId { get; set; }
 
         ///<summary>
         ///Sub location identifier
@@ -6689,6 +6726,6 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Provisioning
 {
     public static class Current
     {
-        public static readonly AquariusServerVersion Version = AquariusServerVersion.Create("24.1.10.0");
+        public static readonly AquariusServerVersion Version = AquariusServerVersion.Create("24.2.66.0");
     }
 }

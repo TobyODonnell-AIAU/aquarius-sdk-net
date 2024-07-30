@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-02-26 18:51:30
+Date: 2024-07-30 03:44:04
 Version: 6.02
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://develop-1.dev.aquariusdev.net/AQUARIUS/Publish/v2
@@ -930,6 +930,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Publish
         ///</summary>
         [ApiMember(Description="User who last modified this note")]
         public string LastModifiedByUser { get; set; }
+
+        ///<summary>
+        ///User who created this note
+        ///</summary>
+        [ApiMember(Description="User who created this note")]
+        public string CreatedByUser { get; set; }
     }
 
     public class LocationReferenceStandard
@@ -1485,6 +1491,7 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Publish
         LogarithmicTable,
         StandardEquation,
         DescriptiveEquation,
+        IsoStandardEquation,
         LinearRegressionModel,
     }
 
@@ -6321,6 +6328,12 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Publish
         ///</summary>
         [ApiMember(DataType="boolean", Description="True if location attachments should be included in the results")]
         public bool? IncludeLocationAttachments { get; set; }
+
+        ///<summary>
+        ///True if location notes should be excluded from the results
+        ///</summary>
+        [ApiMember(DataType="boolean", Description="True if location notes should be excluded from the results")]
+        public bool? ExcludeLocationNotes { get; set; }
     }
 
     [Route("/GetLocationDescriptionList", "GET")]
@@ -6388,6 +6401,29 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Publish
         ///</summary>
         [ApiMember(DataType="string", Description="Filter results to items modified at or after the ChangesSinceToken time", Format="date-time")]
         public DateTime? ChangesSinceToken { get; set; }
+    }
+
+    [Route("/GetLocationNotes", "GET")]
+    public class LocationNotesServiceRequest
+        : IReturn<LocationNotesServiceResponse>
+    {
+        ///<summary>
+        ///Location identifier
+        ///</summary>
+        [ApiMember(Description="Location identifier", IsRequired=true)]
+        public string LocationIdentifier { get; set; }
+
+        ///<summary>
+        ///Filter results to items at or after the QueryFrom time
+        ///</summary>
+        [ApiMember(DataType="string", Description="Filter results to items at or after the QueryFrom time", Format="date-time")]
+        public DateTimeOffset? QueryFrom { get; set; }
+
+        ///<summary>
+        ///Filter results to items at or before the QueryTo time
+        ///</summary>
+        [ApiMember(DataType="string", Description="Filter results to items at or before the QueryTo time", Format="date-time")]
+        public DateTimeOffset? QueryTo { get; set; }
     }
 
     [Route("/GetMetadataChangeTransactionList", "GET")]
@@ -7547,6 +7583,39 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Publish
         public DateTime? NextToken { get; set; }
     }
 
+    public class LocationNotesServiceResponse
+        : PublishServiceResponse
+    {
+        public LocationNotesServiceResponse()
+        {
+            LocationNotes = new List<LocationNote>{};
+        }
+
+        ///<summary>
+        ///Location name
+        ///</summary>
+        [ApiMember(Description="Location name")]
+        public string LocationName { get; set; }
+
+        ///<summary>
+        ///Location identifier
+        ///</summary>
+        [ApiMember(Description="Location identifier")]
+        public string LocationIdentifier { get; set; }
+
+        ///<summary>
+        ///Location unique id
+        ///</summary>
+        [ApiMember(DataType="string", Description="Location unique id", Format="guid")]
+        public Guid LocationUniqueId { get; set; }
+
+        ///<summary>
+        ///Location notes
+        ///</summary>
+        [ApiMember(DataType="array", Description="Location notes")]
+        public List<LocationNote> LocationNotes { get; set; }
+    }
+
     public class MetadataChangeTransactionListServiceResponse
         : PublishServiceResponse
     {
@@ -8051,6 +8120,6 @@ namespace Aquarius.TimeSeries.Client.ServiceModels.Publish
 {
     public static class Current
     {
-        public static readonly AquariusServerVersion Version = AquariusServerVersion.Create("24.1.10.0");
+        public static readonly AquariusServerVersion Version = AquariusServerVersion.Create("24.2.66.0");
     }
 }
